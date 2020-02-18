@@ -1,0 +1,27 @@
+{
+  "name": "sosi_cache_db_manager",
+  "version": "1.0.3",
+  "description": "SoSI's Cache DB management package",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leonidasnascimento/sosi_cache_db_manager.git"
+  },
+  "keywords": [
+    "cache",
+    "database",
+    "redis"
+  ],
+  "author": "Leônidas do Nascimento",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/leonidasnascimento/sosi_cache_db_manager/issues"
+  },
+  "homepage": "https://github.com/leonidasnascimento/sosi_cache_db_manager#readme",
+  "dependencies": {
+    "redis": "^3.0.2"
+  }
+}
