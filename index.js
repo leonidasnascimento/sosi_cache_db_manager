@@ -91,7 +91,7 @@ class CacheDbManager {
 
     setValue(obj, onSuccess, onError) {
         try {
-            if (this.create_redis_client(true)) {
+            if (this.createCacheDbClient(true)) {
                 var str_obj = JSON.stringify(obj)
                 this.client.set(this.key, str_obj, function (err, reply) {
                     if (reply === "OK") {
