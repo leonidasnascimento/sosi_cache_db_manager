@@ -3,12 +3,7 @@ const cacheDbConfig = require("./cacheDbConfig")
 const responseMessage = require("./responseMessage")
 
 class CacheDbManager {
-    client = null
-    keyExists = true
-    isServerOn = true
-    key = ""
-
-    constructor(_key){
+    constructor(_key) {
         this.client = null
         this.isServerOn = true
         this.keyExists = true
@@ -17,27 +12,28 @@ class CacheDbManager {
 
     createCacheDbClient(skipKeyChecking = false) {
         try {
-            client = redis.createClient({
+
+            this.client = redis.createClient({
                 host: cacheDbConfig.host,
                 no_ready_check: false,
                 auth_pass: cacheDbConfig.password,
                 port: cacheDbConfig.port
             });
 
-            client.on('error', function (err) {
+            this.client.on('error', function (err) {
                 responseMessage.serverOn = false
                 responseMessage.message = "Error"
                 responseMessage.data = err
             });
 
-            client.on('connect', function (err) {
+            this.client.on('connect', function (err) {
                 responseMessage.serverOn = true
             });
 
             if (skipKeyChecking) {
                 responseMessage.keyFound = true
             } else {
-                client.exists(this.key, function (err, reply) {
+                this.client.exists(this.key, function (err, reply) {
                     if (reply === 1) {
                         responseMessage.keyFound = true
                     } else {
@@ -46,17 +42,17 @@ class CacheDbManager {
                 });
             }
 
-            if (!(isServerOn && keyExists)) {
+            if (!(this.isServerOn && this.keyExists)) {
                 return false
             } else {
                 return true
             }
         } catch (error) {
-            responseMessage.message = "Exception"
-            responseMessage.data = error
+            responseMessage.message = "Fail while executing 'createCacheDbClient' method. See 'data' property for more details..."
+            responseMessage.data = error.message
 
             if (responseMessage.serverOn) {
-                client.end(client.connection_id)
+                this.client.end(client.connection_id)
             }
 
             return false
@@ -66,28 +62,29 @@ class CacheDbManager {
     getValue(onSuccess, onError) {
         try {
             if (this.createCacheDbClient()) {
-                client.get(this.key, function (err, reply) {
+                this.client.get(this.key, function (err, reply) {
                     responseMessage.data = (!(reply === undefined) && (reply !== "")) ? reply : null
-                    responseMessage.message = (!(reply === undefined) && (reply !== "")) ? "Data was retrieved from Redis Cache Server" : "Result not found"
+                    responseMessage.message = (!(reply === undefined) && (reply !== "")) ? "Data was retrieved from Cache Server" : "Result not found"
 
                     onSuccess(responseMessage)
-                    client.quit()
                 })
+
+                this.client.quit()
             } else {
                 onError(responseMessage)
 
                 if (responseMessage.serverOn) {
-                    client.end(client.connection_id)
+                    this.client.end(this.client.connection_id)
                 }
             }
         } catch (error) {
             responseMessage.data = null
-            responseMessage.message = error
+            responseMessage.message = error.message
 
             onError(responseMessage)
 
             if (responseMessage.serverOn) {
-                client.end(client.connection_id)
+                this.client.end(this.client.connection_id)
             }
         }
     }
@@ -96,32 +93,33 @@ class CacheDbManager {
         try {
             if (this.create_redis_client(true)) {
                 var str_obj = JSON.stringify(obj)
-                client.set(this.key, str_obj, function (err, reply) {
+                this.client.set(this.key, str_obj, function (err, reply) {
                     if (reply === "OK") {
                         responseMessage.message = "Data was successfully set to key '" + this.key + "' as the server sent '" + reply + "'"
                         responseMessage.data = str_obj
 
                         onSuccess(responseMessage)
-                        client.quit()
                     } else {
                         throw err
                     }
                 })
+
+                this.client.quit()
             } else {
                 onError(responseMessage)
 
                 if (responseMessage.serverOn) {
-                    client.end(client.connection_id)
+                    this.client.end(client.connection_id)
                 }
             }
         } catch (error) {
             responseMessage.data = null
-            responseMessage.message = error
+            responseMessage.message = error.message
 
             onError(responseMessage)
 
             if (responseMessage.serverOn) {
-                client.end(client.connection_id)
+                this.client.end(client.connection_id)
             }
         }
     }
